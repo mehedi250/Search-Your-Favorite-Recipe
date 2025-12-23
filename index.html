@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Search Your Favorite Recipe">
+    <meta name="description"
+        content="A good recipe is the result of a good combination of ingredients and good company.">
+    <meta name="keywords" content="Recipe, food, Favorite">
+    <meta name="robots" content="index, follow">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="language" content="English">
+    <meta name="author" content="Md. Mehedi Hasan Shawon">
+
+    <title>Search Your Favorite Recipe</title>
+    <link rel="icon" type="image/png" href="./assets/images/logo-circle.png">
+    <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+
+<body class="">
+    <nav id="navbar" class="navbar navbar-light shadow-sm justify-content-center py-3">
+        <img src="./assets/images/logo.png" height="50" alt="logo">
+    </nav>
+
+    <main class="flex-grow-1">
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <div class="hero-text mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-3">Search Your Favorite Recipe</h1>
+                <p class="lead mb-0">
+                    A good recipe is the result of a good combination of ingredients and good company.
+                </p>
+            </div>
+        </header>
+
+        <section class="search-section my-4">
+            <div class="container">
+                <div class="col-12 col-lg-8 mx-auto">
+                    <div class="input-group input-group-lg shadow-sm">
+                        <input type="text" class="form-control" id="search-input" placeholder="Search..."
+                            aria-label="Search..." aria-describedby="search-button">
+
+                        <button class="btn btn-warning text-white" type="button" id="search-button">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recipe List Section -->
+        <section class="py-3">
+            <div class="container">
+                <h2 class="text-center section-title">Latest Recipes</h2>
+
+                <div class="row g-4" id="recipe-cards">
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+
+
+    <!-- Footer Section -->
+    <footer class="mt-5 py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="mb-0">&copy; Copyright 2025 - All rights reserved.</p>
+                <div class="social-icons">
+
+                    <a href="https://x.com" target="_blank" class="text-white h4 me-3"><i class="fab fa-twitter"></i></a>
+                    <a href="www.youtube.com" target="_blank" class="text-white h4 me-3"><i class="fab fa-youtube"></i></a>
+                    <a href="www.facebook.com" target="_blank" class="text-white h4"><i class="fab fa-facebook-f"></i></a>
+
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to top button -->
+    <button id="scrollToTopBtn" class="fixed-bottom-end btn btn-warning text-white shadow-lg" title="Go to Top">
+        <i class="fa-solid fa-arrow-up-long"></i>
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer text-end">
+                    <button type="button" class="btn btn-warning text-white" data-dismiss="modal"
+                        onclick="closeRecipeModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const GET_RECIPE_LIST_URL = 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
+        const GET_RECIPE_DETAILS_URL = 'https://www.themealdb.com/api/json/v1/1/lookup.php?i=';
+
+        const recipeCardsContainer = document.getElementById('recipe-cards');
+        const modalElement = document.getElementById('exampleModalCenter');
+        const modalBody = document.querySelector('#exampleModalCenter .modal-body');
+
+        let detailModal;
+        detailModal = new bootstrap.Modal(modalElement);
+
+
+        function generateRecipeCard(meal) {
+            const imageUrl = meal.strMealThumb || 'https://play-lh.googleusercontent.com/LPEKXAassn2wdVZrdWrM76V701Z7gu76eLy4U0M0iddcSL91SoG_ll2BY1AuOiyCNLc';
+            const description = meal.strInstructions ? meal.strInstructions.substring(0, 100) + '...' : 'No description available.';
+
+            return `
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 border-0 shadow-lg recipe-card">
+                        <div class="card-img w-100" style="height: 180px; overflow: hidden;">
+                            <img src="${imageUrl}" alt="recipe-image">
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <div class="card-text flex-grow-1">
+                                <h5 class="card-title mb-3">${meal.strMeal}</h5>
+                                <p class="card-text text-muted small mb-3">${description}</p>
+                            </div>
+
+                            <div class="text-end mt-2">
+                                <button type="button" class="btn btn-sm btn-warning text-white rounded-2 px-2 py-1" 
+                                    onclick="openRecipeModal('${meal.idMeal}')">
+                                    VIEW DETAILS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderModalContent(meal) {
+            modalBody.innerHTML = `
+            <div class="modal-image">
+                <img src="${meal.strMealThumb}" alt="${meal.strMeal} image" >
+            </div>
+            
+            <h3 class="modal-title my-3">${meal.strMeal}</h3>
+            <p class="small">${meal.strInstructions || 'Instructions not available.'}</p>
+        `;
+        }
+
+        function closeRecipeModal() {
+            if (detailModal) {
+                detailModal.hide();
+            }
+        }
+
+        async function openRecipeModal(mealId) {
+            if (!mealId || !detailModal) return;
+
+            const url = `${GET_RECIPE_DETAILS_URL}${mealId}`;
+
+            modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading recipe details...</p></div>';
+            detailModal.show();
+
+            try {
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const meal = data.meals ? data.meals[0] : null;
+
+                if (meal) {
+                    renderModalContent(meal);
+                } else {
+                    modalBody.innerHTML = '<p class="text-center text-danger py-5">Recipe details not found.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error fetching recipe details:', error);
+                modalBody.innerHTML = '<p class="text-center text-danger py-5">Failed to load details.</p>';
+            }
+        }
+
+
+        async function fetchRecipeList(searchQuery = '') {
+            try {
+                recipeCardsContainer.innerHTML = '<p class="text-center mt-5">Loading recipes...</p>';
+
+                const response = await fetch(GET_RECIPE_LIST_URL + searchQuery);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.meals && data.meals.length > 0) {
+                    const cardsHTMLArray = data.meals.map((meal) => generateRecipeCard(meal));
+                    recipeCardsContainer.innerHTML = cardsHTMLArray.join('');
+                } else {
+                    recipeCardsContainer.innerHTML = '<p class="text-center">No recipes found.</p>';
+                }
+            } catch (error) {
+                console.error('Error on Fetch Recipe List', error.message);
+                recipeCardsContainer.innerHTML = '<p class="text-center text-danger">Failed to fetch recipe list. Please try again later.</p>';
+            }
+        }
+
+        fetchRecipeList();
+
+        // window.openRecipeModal = openRecipeModal;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+            const scrollThreshold = 300; // Show button after scrolling 300 pixels
+
+            const toggleScrollToTopButton = () => {
+                if (window.scrollY > scrollThreshold) {
+                    scrollToTopBtn.classList.add('show-btn');
+                } else {
+                    scrollToTopBtn.classList.remove('show-btn');
+                }
+            };
+
+            const scrollToTop = () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            };
+
+            window.addEventListener('scroll', toggleScrollToTopButton);
+            scrollToTopBtn.addEventListener('click', scrollToTop);
+            toggleScrollToTopButton();
+
+
+
+            // search
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            searchButton.addEventListener('click', () => {
+                const query = searchInput.value.trim();
+                fetchRecipeList(query);
+            });
+        });
+
+    </script>
+</body>
+
+</html>
