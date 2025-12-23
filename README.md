@@ -6,6 +6,6 @@ Search Your Favorite Recipe - Use Public API
 ### Name : Md. Mehedi Hasan Shawon
 ### Email: mhshawon250@gmail.com
 
-### Live URL: https://mehedi250.github.io/Search-Your-Favorite-Recipe
+### Live URL: https://recipe-store-ic05.netlify.app
 
 
